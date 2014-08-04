@@ -1,0 +1,26 @@
+//
+//  Prefix header
+//
+//  The contents of this file are implicitly included at the beginning of every source file.
+//
+
+#import <Availability.h>
+
+#ifndef __IPHONE_3_0
+#warning "This project uses features only available in iOS SDK 3.0 and later."
+#endif
+
+#ifdef __OBJC__
+    #import <UIKit/UIKit.h>
+    #import <Foundation/Foundation.h>
+    #import <AssetsLibrary/AssetsLibrary.h>
+    #import "UIColor+Help.h"
+#import "LoadingViewManager.h"
+
+
+    #define IOS7 [[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0
+    #define iOS7AddStatusHeight     (IOS7?20:0)
+    #define D_LocalizedCardString(s) [[NSBundle mainBundle] localizedStringForKey:s value:nil table:@"CardToolLanguage"]
+    #define D_Main_Appdelegate (AppDelegate *)[UIApplication sharedApplication].delegate
+#endif
+
