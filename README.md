@@ -19,9 +19,9 @@ MeituDemo
 1.可以自由拖动换图
 2.优化内存管理
 
+效果预览
 
-==========
- 效果预览
+========== 
  ![image](https://github.com/hxxyyangyong/MeituDemo/blob/master/动画.gif)
  ![image](https://github.com/hxxyyangyong/MeituDemo/blob/master/截屏.png)
  ![image](https://github.com/hxxyyangyong/MeituDemo/blob/master/drag.gif)
