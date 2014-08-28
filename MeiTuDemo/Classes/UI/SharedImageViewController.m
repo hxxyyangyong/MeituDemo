@@ -46,7 +46,7 @@
 
 - (void)initResource
 {
-    self.view.backgroundColor = [UIColor whiteColor];
+    self.view.backgroundColor = [UIColor grayColor];
     _contentView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - 44 - iOS7AddStatusHeight)];
     [self.view addSubview:_contentView];
     CGRect rect = CGRectZero;
@@ -62,6 +62,7 @@
         rect.size.width = width;
         rect.size.height = height;
     }
+    
     
     rect.origin.x = (_contentView.frame.size.width - rect.size.width)/2.0f;
     if (rect.size.height < self.contentView.frame.size.height) {
@@ -79,7 +80,8 @@
 {
     self.title = D_LocalizedCardString(@"nav_title_preview");
     UIButton *preViewButton  = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 44, 44)];
-    [preViewButton setTitle:@"提交" forState:UIControlStateNormal];
+    [preViewButton setTitle:@"•••" forState:UIControlStateNormal];
+    [preViewButton.titleLabel setFont:[UIFont systemFontOfSize:30]];
     [preViewButton addTarget:self
                       action:@selector(preViewBtnAction:)
             forControlEvents:UIControlEventTouchUpInside];

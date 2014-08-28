@@ -10,15 +10,18 @@
 @protocol MeituImageEditViewDelegate;
 @interface MeituImageEditView : UIScrollView<UIScrollViewDelegate>
 @property (nonatomic, retain) UIScrollView  *contentView;
-@property (nonatomic, retain) UIBezierPath *realCellArea;
+@property (nonatomic, retain) UIBezierPath  *realCellArea;
 @property (nonatomic, retain) UIImageView   *imageview;
 @property (nonatomic, assign) id<MeituImageEditViewDelegate> tapDelegate;
+@property (nonatomic, assign) CGRect        oldRect;
 - (void)setImageViewData:(UIImage *)imageData;
+- (void)setImageViewData:(UIImage *)imageData rect:(CGRect)rect;
+
+- (void)setNotReloadFrame:(CGRect)frame;
 @end
 
 
 @protocol MeituImageEditViewDelegate <NSObject>
 
 - (void)tapWithEditView:(MeituImageEditView *)sender;
-
 @end

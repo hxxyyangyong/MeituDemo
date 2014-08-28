@@ -39,13 +39,13 @@
     _contentView.showsHorizontalScrollIndicator = NO;
     _contentView.showsVerticalScrollIndicator = NO;
     [self addSubview:_contentView];
-
+    
     
     self.imageview = [[UIImageView alloc] initWithFrame:self.bounds];
     _imageview.frame = CGRectMake(0, 0, MRScreenWidth * 2.5, MRScreenWidth * 2.5);
     _imageview.userInteractionEnabled = YES;
-//    [_imageview setClipsToBounds:YES];
-//    _imageview.contentMode = UIViewContentModeScaleAspectFit;
+    //    [_imageview setClipsToBounds:YES];
+    //    _imageview.contentMode = UIViewContentModeScaleAspectFit;
     [_contentView addSubview:_imageview];
     
     // Add gesture,double tap zoom imageView.
@@ -61,6 +61,44 @@
     
     self.showsHorizontalScrollIndicator = NO;
     self.showsVerticalScrollIndicator = NO;
+}
+
+
+
+- (void)setFrame:(CGRect)frame
+{
+    [super setFrame:frame];
+    _contentView.frame = CGRectInset(self.bounds, 0, 0);
+    self.imageview.frame = CGRectMake(0, 0, MRScreenWidth * 2.5, MRScreenWidth * 2.5);
+    float minimumScale = self.frame.size.width / _imageview.frame.size.width;
+    [_contentView setMinimumZoomScale:minimumScale];
+    [_contentView setZoomScale:minimumScale];
+}
+
+- (void)setNotReloadFrame:(CGRect)frame
+{
+    [super setFrame:frame];
+    
+}
+
+
+- (void)setBounds:(CGRect)bounds
+{
+    [super setBounds:bounds];
+    _contentView.frame = self.bounds;
+    self.imageview.frame = CGRectMake(0, 0, MRScreenWidth * 2.5, MRScreenWidth * 2.5);
+    float minimumScale = self.frame.size.width / _imageview.frame.size.width;
+    [_contentView setMinimumZoomScale:minimumScale];
+    [_contentView setZoomScale:minimumScale];
+}
+
+
+
+- (void)setImageViewData:(UIImage *)imageData rect:(CGRect)rect
+{
+    
+    self.frame = rect;
+    [self setImageViewData:imageData];
 }
 
 
@@ -90,7 +128,7 @@
         }
         
     }else{
-    
+        
         h = self.contentView.frame.size.height;
         w = h*imageData.size.width/imageData.size.height;
         if(w < self.contentView.frame.size.width){
@@ -137,6 +175,20 @@
     }
     
 }
+
+
+//- (void)drawRect:(CGRect)rect
+//{
+////    UIBezierPath* aPath = self.realCellArea;
+////    [[UIColor blackColor] setStroke];
+//////    [[UIColor redColor] setFill];
+////
+////    CGContextRef aRef = UIGraphicsGetCurrentContext();
+////    CGContextTranslateCTM(aRef, 5, 5);
+////    aPath.lineWidth = 5;
+////    [aPath stroke];
+//
+//}
 
 
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event{
@@ -198,20 +250,30 @@
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-
-
+    //NSLog(@"scrollViewDidScroll---------");
+    //    if (scrollView.contentOffset.x < -30 ||scrollView.contentOffset.y < -30||
+    //        scrollView.contentOffset.x > scrollView.contentSize.width + 30 ||scrollView.contentOffset.y > scrollView.contentSize.height + 30) {
+    //        [self.imageview removeFromSuperview];
+    //        [self.superview addSubview:self.imageview];
+    //        self.contentSize = scrollView.frame.size;
+    //        [self endEditing:YES];
+    //        self.imageview.frame = CGRectMake(0, 0, 50, 50);
+    //        self.userInteractionEnabled = NO;
+    //        [self setScrollEnabled:NO];
+    //    }
+    
 }
 
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-
-
+    
+    
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-      CGPoint touch = [[touches anyObject] locationInView:self.superview];
+    CGPoint touch = [[touches anyObject] locationInView:self.superview];
     self.imageview.center = touch;
     
 }
@@ -227,6 +289,8 @@
     _realCellArea = nil;
     _imageview = nil;
     [super dealloc];
+    
+    NSLog(@"meitu Edit view release");
 }
 
 @end

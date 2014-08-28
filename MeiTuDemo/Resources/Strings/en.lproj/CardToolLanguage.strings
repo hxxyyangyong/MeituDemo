@@ -68,7 +68,7 @@
 "card_meitu_max_image_count_less_than_two" = "拼图功能需要至少1张图片！";
 
 "card_meitu_storyboard" = "分镜";
-"card_meitu_poster" = "自由";
+"card_meitu_poster" = "自由模式(待续)";
 "card_meitu_splice" = "拼接";
 "card_meitu_board"  = "边框";
 "card_meitu_edit"  = "添加/删除";

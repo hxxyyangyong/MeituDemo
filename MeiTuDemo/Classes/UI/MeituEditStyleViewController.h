@@ -7,18 +7,22 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "SharedImageViewController.h"
 #import "MeituImageEditView.h"
 #import "GLStoryboardSelectView.h"
-#import "SharedImageViewController.h"
+#import "GLMeituContentView.h"
+#import "GLMeituSpliceContentView.h"
+
 @interface MeituEditStyleViewController : UIViewController<GLStoryboardSelectViewDelegate>
 
 @property (nonatomic, strong) NSArray           *assets;
 @property (nonatomic, strong) UIScrollView      *contentView;
+//@property (nonatomic, strong) NSArray           *buttonInfoArray;
 @property (nonatomic, assign) BOOL              *isCallBack;
 
 
-@property (nonatomic, strong) UIImageView       *bringPosterView;
-@property (nonatomic, strong) UIImageView       *freeBgView;
+//@property (nonatomic, strong) UIImageView       *bringPosterView;
+//@property (nonatomic, strong) UIImageView       *freeBgView;
 
 //边框  添加／删除按钮
 @property (nonatomic, strong) UIView              *boardAndEditView;
@@ -37,7 +41,8 @@
 
 //分镜 ， 自由（海报） ， 拼接的样式选择
 @property (nonatomic, strong) GLStoryboardSelectView      *storyboardView;
-//放如两个selectView
+
+//放入两个selectView
 @property (nonatomic, strong) UIScrollView                *bottomControlView;
 
 //目前选中的分镜效果的button
@@ -49,5 +54,11 @@
 
 @property (nonatomic, assign) NSInteger         selectStoryBoardStyleIndex;
 @property (nonatomic, assign) BOOL              isFirst;
+
+
+
+//update With yangyong
+@property (nonatomic, strong) GLMeituContentView        *meituContentView;
+@property (nonatomic, strong) GLMeituSpliceContentView  *spliceView;
 
 @end

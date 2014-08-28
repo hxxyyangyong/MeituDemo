@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Classes/UI/SharedImageViewController.m"
-            timestampString = "428828266.397719"
+            timestampString = "430886578.708802"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "100"
-            endingLineNumber = "100"
+            startingLineNumber = "102"
+            endingLineNumber = "102"
             landmarkName = "-preViewBtnAction:"
             landmarkType = "5">
          </BreakpointContent>

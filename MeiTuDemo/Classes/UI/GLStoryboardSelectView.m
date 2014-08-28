@@ -32,7 +32,7 @@
 {
     
     _storyboardView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, 50)];
-    [_storyboardView setBackgroundColor:[[UIColor grayColor] colorWithAlphaComponent:0.6]];
+    [_storyboardView setBackgroundColor:[[UIColor colorWithHexString:@"#454545"] colorWithAlphaComponent:0.6]];
     [self addSubview:_storyboardView];
     
     CGFloat width = 116/2.0f;
@@ -89,6 +89,7 @@
             [button setSelected:YES];
             _selectedStoryboardBtn = button;
         }
+        button  = nil;
     }
     [_storyboardView setContentSize:CGSizeMake([imageNameArray count]*width, height)];
     
@@ -113,6 +114,17 @@
         [_delegateSelect didSelectedStoryboardPicCount:self.picCount styleIndex:self.selectStyleIndex];
     }
 }
+
+
+- (void)dealloc
+{
+    
+    [_storyboardView removeFromSuperview];
+    _storyboardView = nil;
+    _selectedStoryboardBtn = nil;
+}
+
+
 
 /*
 // Only override drawRect: if you perform custom drawing.

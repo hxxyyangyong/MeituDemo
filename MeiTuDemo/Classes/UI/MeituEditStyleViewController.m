@@ -8,7 +8,7 @@
 
 #import "MeituEditStyleViewController.h"
 #import "AppDelegate.h"
-@interface MeituEditStyleViewController ()<MeituImageEditViewDelegate>
+@interface MeituEditStyleViewController ()<GLMeituContentViewDelegate>
 
 @end
 
@@ -28,8 +28,6 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    self.view.frame = self.view.frame;
-    self.view.backgroundColor = [UIColor grayColor];
     // Do any additional setup after loading the view.
     if (IOS7) {
         self.automaticallyAdjustsScrollViewInsets = NO;
@@ -47,38 +45,58 @@
 {
     [super viewWillAppear:animated];    
     if (_isFirst) {
-        [self contentResetSizeWithCalc:YES];
         [self initData];
         _isFirst = NO;
     }
     [D_Main_Appdelegate hiddenPreView];
-//    [(CRNavigationController *)self.navigationController setCanDragBack:NO];
+
 
 }
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+
+}
+
 
 
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    
 }
 
 
 - (void)initResource
 {
-
-    self.contentView =  [[UIScrollView alloc] initWithFrame:CGRectMake((self.view.frame.size.width - [self calcContentSize].width)/2.0f, (self.view.frame.size.height - 2*44-iOS7AddStatusHeight - [self calcContentSize].height)/2.0f, [self calcContentSize].width, [self calcContentSize].height)];
-    [self.contentView setBackgroundColor:[UIColor clearColor]];
+    
+    self.view.backgroundColor = [UIColor blackColor];
+    
+    CGSize contentSize = [self calcContentSize];
+    
+    self.contentView =  [[UIScrollView alloc] initWithFrame:CGRectMake((self.view.frame.size.width - contentSize.width)/2.0f, (self.view.frame.size.height- 33 - 44-iOS7AddStatusHeight - contentSize.height)/2.0f, contentSize.width,contentSize.height)];
     [self.view addSubview:_contentView];
     
-    self.freeBgView = [[UIImageView alloc] initWithFrame:_contentView.bounds];
-    [_freeBgView setBackgroundColor:[UIColor whiteColor]];
-    [_contentView addSubview:_freeBgView];
+    self.meituContentView = [[GLMeituContentView alloc] initWithFrame:CGRectMake(0,
+                                                                                 0,
+                                                                                 self.contentView.frame.size.width,
+                                                                                 self.contentView.frame.size.height)];
+    self.meituContentView.delegateMove = self;
+    [self.contentView addSubview:self.meituContentView];
     
     
-    self.bringPosterView = [[UIImageView alloc] initWithFrame:_contentView.bounds];
-    [_bringPosterView setBackgroundColor:[UIColor clearColor]];
-    [_contentView addSubview:_bringPosterView];
+    self.spliceView = [[GLMeituSpliceContentView alloc] initWithFrame:CGRectMake(self.contentView.frame.size.width*2,
+                                                                                 0,
+                                                                                 self.contentView.frame.size.width,
+                                                                                 self.contentView.frame.size.height)];
+    [self.contentView addSubview:self.spliceView];
+    
+    
+    [self.contentView setPagingEnabled:YES];
+    [self.contentView setScrollEnabled:NO];
+    [self.contentView setContentSize:CGSizeMake(self.contentView.frame.size.width*3, self.contentView.frame.size.height)];
+    [self.contentView setShowsVerticalScrollIndicator:NO];
+    [self.contentView setShowsHorizontalScrollIndicator:NO];
     [self initBoardAndEditView];
     [self initToolbarView];
    
@@ -87,13 +105,13 @@
 
 - (void)contentResetSizeWithCalc:(BOOL)calc
 {
-    if (calc) {
-        _contentView.frame = CGRectMake((self.view.frame.size.width - [self calcContentSize].width)/2.0f, (self.view.frame.size.height - 33 - [self calcContentSize].height)/2.0f, [self calcContentSize].width, [self calcContentSize].height);
-        _contentView.contentSize = self.contentView.frame.size;
-
-    }else{
-        self.contentView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - 33);
-    }
+//    if (calc) {
+//        _contentView.frame = CGRectMake((self.view.frame.size.width - [self calcContentSize].width)/2.0f, (self.view.frame.size.height - 33 - [self calcContentSize].height)/2.0f, [self calcContentSize].width, [self calcContentSize].height);
+//        _contentView.contentSize = self.contentView.frame.size;
+//
+//    }else{
+//        self.contentView.frame = CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - 33);
+//    }
 }
 
 
@@ -103,8 +121,8 @@
     //CGRectMake(0, 0, self.view.frame.size.width, self.view.frame.size.height - 2*D_ToolbarWidth-iOS7AddStatusHeight);
     CGFloat size_width = self.view.frame.size.width;
     CGFloat size_height = size_width * 4 /3.0f;
-    if (size_height >= (self.view.frame.size.height-34)) {
-        size_height = self.view.frame.size.height- 34;
+    if (size_height >= (self.view.frame.size.height- iOS7AddStatusHeight - 44 -34)) {
+        size_height = self.view.frame.size.height- iOS7AddStatusHeight - 44 - 34;
         size_width = size_height * 3/4.0f;
     }
     retSize.width = size_width;
@@ -118,7 +136,12 @@
 
 - (void)initData
 {
-    [self resetViewByStyleIndex:1 imageCount:[self.assets count]];
+    [self.meituContentView setAssets:self.assets];
+    [[LoadingViewManager sharedInstance] showLoadingViewInView:self.view withText:@"正在处理"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.meituContentView setStyleIndex:1];
+        [[LoadingViewManager sharedInstance] removeLoadingView:self.view];
+    });
 }
 
 
@@ -128,16 +151,28 @@
     self.title = D_LocalizedCardString(@"card_select_image_pingtu");
     self.navigationItem.backBarButtonItem = nil;
     UIButton *backButton  = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 60, 44)];
-    [backButton setTitle:D_LocalizedCardString(@"Button_Back") forState:UIControlStateNormal];
-//    if (IOS7) {
-//        [backButton setContentHorizontalAlignment:UIControlContentHorizontalAlignmentLeft];
-//        [backButton setImage:[UIImage imageNamed:@"icon_ios7_back"] forState:UIControlStateNormal];
-//    }
+    [backButton setBackgroundColor:[UIColor clearColor]];
+    [backButton setTitle:[NSString stringWithFormat:@" %@",D_LocalizedCardString(@"Button_Back")] forState:UIControlStateNormal];
+    [backButton setImage:[UIImage imageNamed:@"icon_ios7_back"] forState:UIControlStateNormal];
+    
+    [backButton setContentHorizontalAlignment:UIControlContentHorizontalAlignmentLeft];
     [backButton addTarget:self
                       action:@selector(backButtonAction:)
             forControlEvents:UIControlEventTouchUpInside];
     UIBarButtonItem *backButtonItem = [[UIBarButtonItem alloc] initWithCustomView:backButton];
-    self.navigationItem.leftBarButtonItem = backButtonItem;
+
+    UIBarButtonItem *negativeSpacer = [[UIBarButtonItem alloc]
+                                       initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace
+                                       target:nil action:nil];
+
+    if(isIOS7){
+        negativeSpacer.width = -8;
+    }else{
+        negativeSpacer.width = 0;
+    }
+    
+    self.navigationItem.leftBarButtonItems = [NSArray arrayWithObjects:negativeSpacer,backButtonItem, nil];
+    
     
     UIButton *preViewButton  = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, 44, 44)];
     [preViewButton setTitle:D_LocalizedCardString(@"nav_title_preview") forState:UIControlStateNormal];
@@ -163,12 +198,19 @@
     
     self.boardbutton = [[UIButton alloc] initWithFrame:CGRectMake(75, 0, 75, 30)];
     self.editbutton  = [[UIButton alloc] initWithFrame:CGRectMake(_boardAndEditView.frame.size.width-75-75, 0, 75, 30)];
-    
+
+//    [self.boardbutton setBackgroundColorNormal:[[UIColor colorWithHexString:@"#1fbba6"] colorWithAlphaComponent:0.9] highlightedColor:[[UIColor colorWithHexString:@"#03917e"] colorWithAlphaComponent:0.9]];
+//    
+//    [self.editbutton setBackgroundColorNormal:[[UIColor colorWithHexString:@"#f47a75"] colorWithAlphaComponent:0.9] highlightedColor:[[UIColor colorWithHexString:@"#ce5b56"] colorWithAlphaComponent:0.9]];
     [self.boardbutton setBackgroundImage:[UIImage imageNamed:@"btn_meitu_board_normal"] forState:UIControlStateNormal];
     [self.boardbutton setBackgroundImage:[UIImage imageNamed:@"btn_meitu_board_highlight"] forState:UIControlStateHighlighted];
+    [self.boardbutton setBackgroundImage:[UIImage imageNamed:@"btn_meitu_board_highlight"] forState:UIControlStateSelected];
     
     [self.editbutton setBackgroundImage:[UIImage imageNamed:@"btn_meitu_edit_normal"] forState:UIControlStateNormal];
     [self.editbutton setBackgroundImage:[UIImage imageNamed:@"btn_meitu_edit_highlight"] forState:UIControlStateHighlighted];
+    [self.editbutton setBackgroundImage:[UIImage imageNamed:@"btn_meitu_edit_highlight"] forState:UIControlStateSelected];
+    
+    
     
     [self.boardbutton setTitle:D_LocalizedCardString(@"card_meitu_board") forState:UIControlStateNormal];
     [self.editbutton setTitle:D_LocalizedCardString(@"card_meitu_edit") forState:UIControlStateNormal];
@@ -201,6 +243,7 @@
     
     
     [self initStoryboardView];
+    [self initPosterView];
     [self.view addSubview:_bottomControlView];
     [self.bottomControlView setContentSize:CGSizeMake(self.bottomControlView.frame.size.width *2, _bottomControlView.frame.size.height)];
     [self.bottomControlView setPagingEnabled:YES];
@@ -208,7 +251,7 @@
     [_bottomControlView setHidden:YES];
     
     self.bottomView = [[UIView alloc] initWithFrame:CGRectMake(0, self.view.frame.size.height - 44-iOS7AddStatusHeight - 33, self.view.frame.size.width, 33)];
-    [_bottomView setBackgroundColor:[[UIColor blackColor] colorWithAlphaComponent:0.9]];
+    [_bottomView setBackgroundColor:[[UIColor colorWithHexString:@"#1d1d1d"] colorWithAlphaComponent:0.9]];
     
     _storyboardButton = [[UIButton alloc] init];
     [_storyboardButton setTitle:D_LocalizedCardString(@"card_meitu_storyboard")
@@ -266,29 +309,14 @@
     UIButton *button = (UIButton *)sender;
     [_selectControlButton setSelected:NO];
     //重置选中的view
-    
-   
     switch (button.tag) {
         case 1:
         {
             [self showBoardButton];
-            [self contentResetSizeWithCalc:YES];
             if (_selectControlButton != _storyboardButton) {
-                self.freeBgView.image = nil;
-                self.freeBgView.backgroundColor = self.selectedBoardColor?self.selectedBoardColor:[UIColor whiteColor];
-                [LoadingViewManager showLoadViewWithText:@"正在处理" andShimmering:YES andBlurEffect:YES inView:self.view];
-                dispatch_async(dispatch_get_global_queue(0, 0), ^{
-                    [self contentRemoveView];
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [self resetViewByStyleIndex:self.selectStoryBoardStyleIndex imageCount:self.assets.count];
-                        [LoadingViewManager hideLoadViewInView:self.view];
-                    });
-                    
-                });
-                
-                [self.bringPosterView setHidden:NO];
+                [self.contentView setContentOffset:CGPointMake(0, 0) animated:YES];
             }
-            
+
             self.bottomControlView.contentOffset = CGPointMake(0, 0);
             [self showStoryboardAndPoster];
         }
@@ -296,27 +324,20 @@
         case 2:
         {
             [self hiddenBoardButton];
-            [self contentResetSizeWithCalc:YES];
             if (_selectControlButton != _posterButton) {
-                self.freeBgView.image = nil;
-                self.freeBgView.backgroundColor = [UIColor whiteColor];
-//                [self freeStyleCreate];
+                [self freeStyleCreate];
             }
             self.bottomControlView.contentOffset = CGPointMake(self.bottomControlView.frame.size.width, 0);
             [self showStoryboardAndPoster];
-            [self.bringPosterView setHidden:YES];
         }
             break;
         case 3:
         {
-            [self contentResetSizeWithCalc:NO];
             [self showBoardButton];
             if (_selectControlButton != _spliceButton) {
-                self.freeBgView.image = nil;
-                self.freeBgView.backgroundColor = [UIColor whiteColor];
                 [self spliceAction];
             }
-            [self.bringPosterView setHidden:YES];
+            
             [self hiddenStoryboardAndPoster];
         }
             break;
@@ -362,32 +383,20 @@
     
     if (_selectControlButton.tag == 1) {
         
-        UIImage *posterImage = [UIImage imageNamed:@"testBoder_1"];
-            posterImage = [self originImage:posterImage scaleToSize:self.contentView.frame.size];
-            self.bringPosterView.image = [posterImage stretchableImageWithLeftCapWidth:posterImage.size.width/4.0f topCapHeight:160];
-            self.bringPosterView.frame = self.bringPosterView.frame;
-            
-            
-        NSString *boardColor = @"#FED597";
-        if (boardColor) {
-            @try {
-                self.freeBgView.image = nil;
-                self.freeBgView.backgroundColor = [UIColor colorWithHexString:boardColor];
-                self.selectedBoardColor = [UIColor colorWithHexString:boardColor];
-            }
-            @catch (NSException *exception) {
-                
-            }
-            @finally {
-                
-            }
-        }
+        [_meituContentView setBackgroundColor:[UIColor whiteColor] posterImage:[UIImage imageNamed:@"testBoder_1.png"]];
+//        GLMeitoPosterSelectViewController *posterVC = [[GLMeitoPosterSelectViewController alloc] init];
+//        posterVC.delegateSelectPet = self;
+//        posterVC.blurImage = [ImageUtility cutImageWithView:self.view];
+//        [self presentViewController:posterVC animated:YES completion:^{
+//        }];
         
     }else if(_selectControlButton.tag == 3){
-        
-        self.freeBgView.image  = nil;
-        UIImage *posterImage = [UIImage imageNamed:@"testBoder_2"];
-        self.freeBgView.backgroundColor = [UIColor colorWithPatternImage:posterImage];
+        [_spliceView setBoarderImage:[UIImage imageNamed:@"testBoder_2.png"]];
+//        GLMeitoBorderSelectViewController *posterVC = [[GLMeitoBorderSelectViewController alloc] init];
+//        posterVC.delegateSelectPet = self;
+//        posterVC.blurImage = [ImageUtility cutImageWithView:self.view];
+//        [self presentViewController:posterVC animated:YES completion:^{
+//        }];
     }
     
 }
@@ -398,8 +407,7 @@
     [self.navigationController popViewControllerAnimated:YES];
 }
 
-#pragma mark
-#pragma mark GLMeitoPosterSelectViewControllerDelegate
+
 
 -(UIImage*)originImage:(UIImage *)image   scaleToSize:(CGSize)size
 {
@@ -419,45 +427,126 @@
 }
 
 
+
+- (UIImage *)cutImageWithView:(UIView *)contentView
+{
+    if(UIGraphicsBeginImageContextWithOptions != NULL)
+    {
+        UIGraphicsBeginImageContextWithOptions(contentView.frame.size, NO, 2.0);
+    } else {
+        UIGraphicsBeginImageContext(contentView.frame.size);
+    }
+    
+    [contentView.layer renderInContext:UIGraphicsGetCurrentContext()];
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    //    static int index = 0;
+    //    NSString *path = [NSHomeDirectory() stringByAppendingFormat:@"cut_%@/%d.png",[NSDate date],index];
+    //    if ([UIImagePNGRepresentation(image) writeToFile:path atomically:YES]) {
+    //        NSLog(@"Succeeded! /n %@",path);
+    //    }
+    //    else {
+    //        NSLog(@"Failed!");
+    //    }
+    return image;
+}
+
+- (UIImage *)captureScrollView:(UIScrollView *)scrollView{
+    UIImage* image = nil;
+    if(UIGraphicsBeginImageContextWithOptions != NULL)
+    {
+        UIGraphicsBeginImageContextWithOptions(scrollView.contentSize, NO, 2.0);
+    } else {
+        UIGraphicsBeginImageContext(scrollView.contentSize);
+    }
+    {
+        CGPoint savedContentOffset = scrollView.contentOffset;
+        CGRect savedFrame = scrollView.frame;
+        scrollView.contentOffset = CGPointZero;
+        scrollView.frame = CGRectMake(0, 0, scrollView.contentSize.width, scrollView.contentSize.height);
+        
+        [scrollView.layer renderInContext: UIGraphicsGetCurrentContext()];
+        image = UIGraphicsGetImageFromCurrentImageContext();
+        
+        scrollView.contentOffset = savedContentOffset;
+        scrollView.frame = savedFrame;
+    }
+    UIGraphicsEndImageContext();
+    
+    if (image != nil) {
+        return image;
+    }
+    return nil;
+}
+
+
+
+#pragma mark 
+#pragma mark 分镜中图的移动
+
+- (void)movedEditView
+{
+    [self hiddenStoryboardAndPoster];
+}
+
+
+
+
+#pragma mark
+#pragma mark 分镜-边框选择 GLMeitoPosterSelectViewControllerDelegate
 - (void)didSelectedWithPoster:(NSDictionary *)posterDict
 {
-    if ([posterDict objectForKey:@"PosterImagePath"]) {
-        UIImage *posterImage = [UIImage imageWithContentsOfFile:[posterDict objectForKey:@"PosterImagePath"]];
-        posterImage = [self originImage:posterImage scaleToSize:self.contentView.frame.size];
-        self.bringPosterView.image = [posterImage stretchableImageWithLeftCapWidth:posterImage.size.width/4.0f topCapHeight:160];
-        self.bringPosterView.frame = self.bringPosterView.frame;
-        
-        
-    }
-    NSString *boardColor = [posterDict objectForKey:@"BoardColor"];
-    if (boardColor) {
-        @try {
-            self.freeBgView.image = nil;
-            self.freeBgView.backgroundColor = [UIColor colorWithHexString:boardColor];
-            self.selectedBoardColor = [UIColor colorWithHexString:boardColor];
-        }
-        @catch (NSException *exception) {
-            
-        }
-        @finally {
-            
-        }
-    }
 
+
+}
+
+- (void)didSelectedWithPoster:(NSDictionary *)posterDict isEmpty:(BOOL)isEmpty
+{
+    
+    if (isEmpty) {
+        [_meituContentView setBackgroundColor:[UIColor whiteColor] posterImage:nil];
+    }else{
+        UIImage *posterImage = nil;
+        if ([posterDict objectForKey:@"PosterImagePath"]) {
+            posterImage = [UIImage imageWithContentsOfFile:[posterDict objectForKey:@"PosterImagePath"]];
+            posterImage = [self originImage:posterImage scaleToSize:self.meituContentView.frame.size];
+        }
+        NSString *boardColor = [posterDict objectForKey:@"BoardColor"];
+        if (boardColor) {
+            @try {
+                self.selectedBoardColor = [UIColor colorWithHexString:boardColor];
+                [_meituContentView setBackgroundColor:self.selectedBoardColor  posterImage:posterImage];
+            }
+            @catch (NSException *exception) {
+                
+            }
+            @finally {
+                
+            }
+        }
+    }
+    
 }
 
 
 #pragma mark 
-#pragma mark GLMeitoBorderSelectViewControllerDelegate
+#pragma mark 拼接的边框选择 GLMeitoBorderSelectViewControllerDelegate
 - (void)didSelectedWithBorder:(NSDictionary *)borderDict
 {
-    self.freeBgView.image  = nil;
-    if ([borderDict objectForKey:@"BorderImagePath"]) {
-        UIImage *posterImage = [UIImage imageWithContentsOfFile:[borderDict objectForKey:@"BorderImagePath"]];
-        self.freeBgView.backgroundColor = [UIColor colorWithPatternImage:posterImage];
+
+
+}
+- (void)didSelectedWithBorder:(NSDictionary *)borderDict isEmpty:(BOOL)isEmpty
+{
+    if (isEmpty) {
+        [self.spliceView setBoarderImage:nil];
+    }else{
+        if ([borderDict objectForKey:@"BorderImagePath"]) {
+            UIImage *posterImage = [UIImage imageWithContentsOfFile:[borderDict objectForKey:@"BorderImagePath"]];
+            [self.spliceView setBoarderImage:posterImage];
+        }
     }
 }
-
 
 
 
@@ -477,16 +566,29 @@
  */
 - (void)didSelectedStoryboardPicCount:(NSInteger)picCount styleIndex:(NSInteger)styleIndex
 {
-    
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        [[LoadingViewManager sharedInstance] showLoadingViewInView:self.view withText:@"正在处理"];
-        [self contentRemoveView];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self resetViewByStyleIndex:styleIndex imageCount:self.assets.count];
-        });
-        
+    [[LoadingViewManager sharedInstance] showLoadingViewInView:self.view withText:@"正在处理"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self resetViewByStyleIndex:styleIndex imageCount:self.assets.count];
+        [[LoadingViewManager sharedInstance] removeLoadingView:self.view];
     });
 }
+
+
+- (void)initPosterView
+{
+    
+}
+
+
+#pragma mark
+#pragma mark 自由模式图的移动
+
+- (void)stickerIsEdit
+{
+    [self hiddenStoryboardAndPoster];
+}
+
+
 
 
 
@@ -495,7 +597,7 @@
 #pragma mark 屏幕touch的监听 便于隐藏底部的bar
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [self hiddenStoryboardAndPoster];
+//    [self hiddenStoryboardAndPoster];
 }
 
 - (void)tapWithEditView:(MeituImageEditView *)sender
@@ -509,10 +611,10 @@
     for (UIView *subView in _contentView.subviews) {
         [subView removeFromSuperview];
     }
-    [_contentView addSubview:self.bringPosterView];
-    [_contentView bringSubviewToFront:self.bringPosterView];
-    [_contentView addSubview:self.freeBgView];
-    [_contentView sendSubviewToBack:self.freeBgView];
+//    [_contentView addSubview:self.bringPosterView];
+//    [_contentView bringSubviewToFront:self.bringPosterView];
+//    [_contentView addSubview:self.freeBgView];
+//    [_contentView sendSubviewToBack:self.freeBgView];
 }
 
 
@@ -525,133 +627,11 @@
 - (void)resetViewByStyleIndex:(NSInteger)index imageCount:(NSInteger)count
 {
 
+    [self.contentView setContentOffset:CGPointMake(0, 0) animated:YES];
     @synchronized(self){
         self.selectStoryBoardStyleIndex = index;
-        NSString *picCountFlag = @"";
-        NSString *styleIndex = @"";
-        switch (count) {
-            case 2:
-                picCountFlag = @"two";
-                break;
-            case 3:
-                picCountFlag = @"three";
-                break;
-            case 4:
-                picCountFlag = @"four";
-                break;
-            case 5:
-                picCountFlag = @"five";
-                break;
-            default:
-                break;
-        }
-        
-        switch (index) {
-            case 1:
-                styleIndex = @"1";
-                break;
-            case 2:
-                styleIndex = @"2";
-                break;
-            case 3:
-                styleIndex = @"3";
-                break;
-            case 4:
-                styleIndex = @"4";
-                break;
-            case 5:
-                styleIndex = @"5";
-                break;
-            case 6:
-                styleIndex = @"6";
-                break;
-            default:
-                break;
-        }
-        
-        NSString *styleName = [NSString stringWithFormat:@"number_%@_style_%@.plist",picCountFlag,styleIndex];
-        NSDictionary *styleDict = [NSDictionary dictionaryWithContentsOfFile:
-                                   [[NSBundle mainBundle].resourcePath stringByAppendingPathComponent:styleName]];
-        if (styleDict) {
-            CGSize superSize = CGSizeFromString([[styleDict objectForKey:@"SuperViewInfo"] objectForKey:@"size"]);
-            superSize = [self sizeScaleWithSize:superSize scale:2.0f];
-            
-            NSArray *subViewArray = [styleDict objectForKey:@"SubViewArray"];
-            
-            
-            
-            for(int j = 0; j < [subViewArray count]; j++)
-            {
-                CGRect rect = CGRectZero;
-                UIBezierPath *path = nil;
-                ALAsset *asset = [self.assets objectAtIndex:j];
-                UIImage *image = [UIImage imageWithCGImage:asset.defaultRepresentation.fullScreenImage];
-                
-                NSDictionary *subDict = [subViewArray objectAtIndex:j];
-                if([subDict objectForKey:@"frame"])
-                {
-                    rect = CGRectFromString([subDict objectForKey:@"frame"]);
-                    rect = [self rectScaleWithRect:rect scale:2.0f];
-                    rect.origin.x = rect.origin.x * _contentView.frame.size.width/superSize.width;
-                    rect.origin.y = rect.origin.y * _contentView.frame.size.height/superSize.height;
-                    rect.size.width = rect.size.width * _contentView.frame.size.width/superSize.width;
-                    rect.size.height = rect.size.height * _contentView.frame.size.height/superSize.height;
-                }
-                rect = [self rectWithArray:[subDict objectForKey:@"pointArray"] andSuperSize:superSize];
-                if ([subDict objectForKey:@"pointArray"]) {
-                    NSArray *pointArray = [subDict objectForKey:@"pointArray"];
-                    path = [UIBezierPath bezierPath];
-                    if (pointArray.count > 2) {//当点的数量大于2个的时候
-                        //生成点的坐标
-                        for(int i = 0; i < [pointArray count]; i++)
-                        {
-                            NSString *pointString = [pointArray objectAtIndex:i];
-                            if (pointString) {
-                                CGPoint point = CGPointFromString(pointString);
-                                point = [self pointScaleWithPoint:point scale:2.0f];
-                                point.x = (point.x)*_contentView.frame.size.width/superSize.width -rect.origin.x;
-                                point.y = (point.y)*_contentView.frame.size.height/superSize.height -rect.origin.y;
-                                if (i == 0) {
-                                    [path moveToPoint:point];
-                                }else{
-                                    [path addLineToPoint:point];
-                                }
-                            }
-                            
-                        }
-                    }else{
-                        //当点的左边不能形成一个面的时候  至少三个点的时候 就是一个正规的矩形
-                        //点的坐标就是rect的四个角
-                        [path moveToPoint:CGPointMake(0, 0)];
-                        [path addLineToPoint:CGPointMake(rect.size.width, 0)];
-                        [path addLineToPoint:CGPointMake(rect.size.width, rect.size.height)];
-                        [path addLineToPoint:CGPointMake(0, rect.size.height)];
-                    }
-                    [path closePath];
-                }
-                
-                
-                
-                MeituImageEditView *imageView = [[MeituImageEditView alloc] initWithFrame:rect];
-                [imageView setClipsToBounds:YES];
-                [imageView setBackgroundColor:[UIColor grayColor]];
-                imageView.tag = j;
-                imageView.realCellArea = path;
-                imageView.tapDelegate = self;
-                [imageView setImageViewData:image];
-                //回调或者说是通知主线程刷新，
-                [_contentView addSubview:imageView];
-                imageView = nil;
-                
-                
-            }
-        }
-        [_contentView bringSubviewToFront:self.bringPosterView];
-        _contentView.contentSize = _contentView.frame.size;
-        self.bringPosterView.frame = CGRectMake(0, 0, _contentView.contentSize.width, _contentView.contentSize.height);
+        [self.meituContentView setStyleIndex:self.selectStoryBoardStyleIndex];
     }
-    [self performSelector:@selector(hiddenWaitView) withObject:nil afterDelay:1.0];
-    
 }
 
 - (void)hiddenWaitView
@@ -685,7 +665,7 @@
         }
         rect = CGRectMake(minX, minY, maxX - minX, maxY - minY);
     }
-    rect = [self rectScaleWithRect:rect scale:2.0f];
+    rect = [GLMeituContentView rectScaleWithRect:rect scale:2.0f];
     rect.origin.x = rect.origin.x * _contentView.frame.size.width/superSize.width;
     rect.origin.y = rect.origin.y * _contentView.frame.size.height/superSize.height;
     rect.size.width = rect.size.width * _contentView.frame.size.width/superSize.width;
@@ -695,47 +675,14 @@
 }
 
 
-- (CGRect)rectScaleWithRect:(CGRect)rect scale:(CGFloat)scale
-{
-    if (scale<=0) {
-        scale = 1.0f;
-    }
-    CGRect retRect = CGRectZero;
-    retRect.origin.x = rect.origin.x/scale;
-    retRect.origin.y = rect.origin.y/scale;
-    retRect.size.width = rect.size.width/scale;
-    retRect.size.height = rect.size.height/scale;
-    return  retRect;
-}
-
-- (CGPoint)pointScaleWithPoint:(CGPoint)point scale:(CGFloat)scale
-{
-    if (scale<=0) {
-        scale = 1.0f;
-    }
-    CGPoint retPointt = CGPointZero;
-    retPointt.x = point.x/scale;
-    retPointt.y = point.y/scale;
-    return  retPointt;
-}
-
-
-- (CGSize)sizeScaleWithSize:(CGSize)size scale:(CGFloat)scale
-{
-    if (scale<=0) {
-        scale = 1.0f;
-    }
-    CGSize retSize = CGSizeZero;
-    retSize.width = size.width/scale;
-    retSize.height = size.height/scale;
-    return  retSize;
-}
-
-
 
 #pragma mark
 #pragma mark 自由模式中的选择
 
+- (void)freeStyleCreate
+{
+
+}
 
 //- (void)stickerViewDidBeginEditing:(ZDStickerView *)sticker
 //{
@@ -754,42 +701,34 @@
 
 
 
-
 #pragma mark
 #pragma mark 拼接
 - (void)spliceAction
 {
     @synchronized(self){
-        [self contentRemoveView];
-        CGRect rect = CGRectZero;
-        rect.origin.x = 0;
-        rect.origin.y = 10;
-        for (int i = 0; i < [self.assets count]; i++) {
-            ALAsset *asset = [self.assets objectAtIndex:i];
-            UIImage *image = [UIImage imageWithCGImage:asset.defaultRepresentation.fullScreenImage];
-            CGFloat height = image.size.height;
-            CGFloat width = image.size.width;
-            rect.size.width = _contentView.frame.size.width - 20;
-            rect.size.height = height*((_contentView.frame.size.width - 20)/width);
-            rect.origin.x = 10;//(_contentView.frame.size.width - rect.size.width)/2.0f + 10;
-            //        rect.size.width = rect.size.width - 20;
-            UIImageView *imageView = [[UIImageView alloc] initWithFrame:rect];
-            rect.origin.y += rect.size.height+5;
-            imageView.image = image;
-            //      [imageView.layer setBorderWidth:2.0f];
-            //      [imageView.layer setBorderColor:[UIColor clearColor].CGColor];
-            //      self.selectedBoardColor == nil ?[UIColor whiteColor].CGColor:self.selectedBoardColor.CGColor];
-            [_contentView addSubview:imageView];
-        }
-        _contentView.contentSize = CGSizeMake(_contentView.frame.size.width, rect.origin.y+5);
         
-        self.freeBgView.frame = CGRectMake(0, 0, _contentView.contentSize.width, _contentView.contentSize.height);
+        if (_spliceView.assets == nil) {
+            [_spliceView setAssets:self.assets];
+
+            [[LoadingViewManager sharedInstance] showLoadingViewInView:self.view withText:@"正在处理"];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [_spliceView initData];
+                [self.contentView setContentOffset:CGPointMake(_contentView.bounds.size.width*2, 0) animated:YES];
+                [[LoadingViewManager sharedInstance] removeLoadingView:self.view];
+
+            });
+            
+        }else{
+                [self.contentView setContentOffset:CGPointMake(self.contentView.frame.size.width*2, 0) animated:YES];
+        }
     }
    
 }
 
 
-
+/**
+ *  收起边框按钮
+ */
 - (void)hiddenBoardButton
 {
 
@@ -800,6 +739,9 @@
     
 }
 
+/**
+ *  显示边框 按钮
+ */
 - (void)showBoardButton
 {
     _boardbutton.hidden = NO;
@@ -812,6 +754,36 @@
 
 
 
+//#pragma mark 
+//#pragma mark  坐标的转换 将2倍的像素转化成一倍的
+//
+//- (CGRect)rectScaleWithRect:(CGRect)rect scale:(CGFloat)scale
+//{
+//    CGRect retRect = CGRectZero;
+//    retRect.origin.x = rect.origin.x/2.0f;
+//        retRect.origin.y = rect.origin.y/2.0f;
+//        retRect.size.width = rect.size.width/2.0f;
+//        retRect.size.height = rect.size.height/2.0f;
+//    return  retRect;
+//}
+//
+//- (CGPoint)pointScaleWithPoint:(CGPoint)point scale:(CGFloat)scale
+//{
+//    CGPoint retPointt = CGPointZero;
+//    retPointt.x = point.x/2.0f;
+//    retPointt.y = point.y/2.0f;
+//    return  retPointt;
+//}
+//
+//
+//- (CGSize)sizeScaleWithSize:(CGSize)size scale:(CGFloat)scale
+//{
+//    CGSize retSize = CGSizeZero;
+//    retSize.width = size.width/2.0f;
+//    retSize.height = size.height/2.0f;
+//    return  retSize;
+//}
+
 
 
 #pragma mark
@@ -821,43 +793,85 @@
 {
     [self.navigationController popViewControllerAnimated:YES];
     [D_Main_Appdelegate showPreView];
+    [self releseViewResource];
 }
 
+- (void)releseViewResource
+{
+    [_meituContentView removeFromSuperview];
+    _meituContentView = nil;
+    
+}
+
+
+
+#pragma mark
+#pragma mark 预览图
 
 - (void)preViewBtnAction:(id)sender
 {
     SharedImageViewController *sharedVC = [[SharedImageViewController alloc] init];
-    sharedVC.image = [self captureScrollView:self.contentView];
+    switch (self.selectControlButton.tag) {
+        case 1:
+            sharedVC.image = [self cutImageWithView:self.meituContentView];
+            break;
+        case 2:
+            break;
+        case 3:
+            sharedVC.image = [self captureScrollView:self.spliceView];
+            break;
+            
+        default:
+            break;
+    }
     [self.navigationController pushViewController:sharedVC animated:YES];
 }
 
 
-- (UIImage *)captureScrollView:(UIScrollView *)scrollView{
-    UIImage* image = nil;
-    if(UIGraphicsBeginImageContextWithOptions != NULL)
-    {
-        UIGraphicsBeginImageContextWithOptions(scrollView.contentSize, NO, 2.0);
-    } else {
-        UIGraphicsBeginImageContext(scrollView.contentSize);
-    }
-    {
-        CGPoint savedContentOffset = scrollView.contentOffset;
-        CGRect savedFrame = scrollView.frame;
-        scrollView.contentOffset = CGPointZero;
-        scrollView.frame = CGRectMake(0, 0, scrollView.contentSize.width, scrollView.contentSize.height);
-        
-        [scrollView.layer renderInContext: UIGraphicsGetCurrentContext()];
-        image = UIGraphicsGetImageFromCurrentImageContext();
-        
-        scrollView.contentOffset = savedContentOffset;
-        scrollView.frame = savedFrame;
-    }
-    UIGraphicsEndImageContext();
+
+
+- (void)dealloc
+{
     
-    if (image != nil) {
-        return image;
-    }
-    return nil;
+    
+    
+    _assets = nil;
+    [_contentView removeFromSuperview];
+    _contentView = nil;
+    [_boardAndEditView removeFromSuperview];
+    
+    [_boardbutton removeFromSuperview];
+    _boardbutton = nil;
+    
+    [_editbutton removeFromSuperview];
+    _editbutton = nil;
+    [_bottomView removeFromSuperview];
+    _bottomView = nil;
+    [_storyboardButton removeFromSuperview];
+    _storyboardButton = nil;
+    [_posterButton removeFromSuperview];
+    _posterButton = nil;
+    [_spliceButton removeFromSuperview];
+    _spliceButton = nil;
+    [_selectControlButton removeFromSuperview];
+    _selectControlButton = nil;
+    [_storyboardView removeFromSuperview];
+    _storyboardView = nil;
+
+    [_bottomControlView removeFromSuperview];
+    _bottomControlView = nil;
+    [_selectedStoryboardBtn removeFromSuperview];
+    _selectedStoryboardBtn = nil;
+    [_selectedPosterBtn removeFromSuperview];
+    _selectedPosterBtn = nil;
+    _selectedBoardColor = nil;
+    [_meituContentView removeFromSuperview];
+    _meituContentView = nil;
+    [_spliceView removeFromSuperview];
+    _spliceView = nil;
+    NSLog(@"%@::::::::deallloc",[self class]);
+    
+    
 }
 
 

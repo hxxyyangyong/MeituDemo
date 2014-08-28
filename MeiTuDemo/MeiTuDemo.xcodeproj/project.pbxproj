@@ -127,6 +127,8 @@
 		C16174E3198F6B4A008F419A /* UIButton+Help.m in Sources */ = {isa = PBXBuildFile; fileRef = C16174E2198F6B4A008F419A /* UIButton+Help.m */; };
 		C16174E6198F6B86008F419A /* UIImage+Help.m in Sources */ = {isa = PBXBuildFile; fileRef = C16174E5198F6B86008F419A /* UIImage+Help.m */; };
 		C16174E8198F732B008F419A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C16174E7198F732B008F419A /* Images.xcassets */; };
+		C1A9D5B419AEC8BD0030FEFF /* GLMeituSpliceContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = C1A9D5AE19AEC8BD0030FEFF /* GLMeituSpliceContentView.m */; };
+		C1A9D5B519AEC8BD0030FEFF /* GLMeituContentView.m in Sources */ = {isa = PBXBuildFile; fileRef = C1A9D5AF19AEC8BD0030FEFF /* GLMeituContentView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -280,6 +282,10 @@
 		C16174E4198F6B86008F419A /* UIImage+Help.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Help.h"; sourceTree = "<group>"; };
 		C16174E5198F6B86008F419A /* UIImage+Help.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Help.m"; sourceTree = "<group>"; };
 		C16174E7198F732B008F419A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		C1A9D5AE19AEC8BD0030FEFF /* GLMeituSpliceContentView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GLMeituSpliceContentView.m; sourceTree = "<group>"; };
+		C1A9D5AF19AEC8BD0030FEFF /* GLMeituContentView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GLMeituContentView.m; sourceTree = "<group>"; };
+		C1A9D5B119AEC8BD0030FEFF /* GLMeituContentView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLMeituContentView.h; sourceTree = "<group>"; };
+		C1A9D5B319AEC8BD0030FEFF /* GLMeituSpliceContentView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GLMeituSpliceContentView.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -423,12 +429,16 @@
 				C16173F5198F5519008F419A /* MeituImageEditView.m */,
 				C16173FA198F559C008F419A /* GLStoryboardSelectView.h */,
 				C16173FB198F559C008F419A /* GLStoryboardSelectView.m */,
-				C16173F6198F5519008F419A /* MeituEditStyleViewController.m */,
 				C16173F7198F5519008F419A /* MeituEditStyleViewController.h */,
+				C16173F6198F5519008F419A /* MeituEditStyleViewController.m */,
 				C1617419198F5A2A008F419A /* HomeMenuViewController.h */,
 				C161741A198F5A2A008F419A /* HomeMenuViewController.m */,
 				C16174CA198F6431008F419A /* SharedImageViewController.h */,
 				C16174CB198F6431008F419A /* SharedImageViewController.m */,
+				C1A9D5B319AEC8BD0030FEFF /* GLMeituSpliceContentView.h */,
+				C1A9D5AE19AEC8BD0030FEFF /* GLMeituSpliceContentView.m */,
+				C1A9D5AF19AEC8BD0030FEFF /* GLMeituContentView.m */,
+				C1A9D5B119AEC8BD0030FEFF /* GLMeituContentView.h */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -830,8 +840,10 @@
 				C1617418198F5946008F419A /* MBProgressHUD.m in Sources */,
 				C16174CC198F6431008F419A /* SharedImageViewController.m in Sources */,
 				C1617417198F5946008F419A /* LoadingViewManager.m in Sources */,
+				C1A9D5B519AEC8BD0030FEFF /* GLMeituContentView.m in Sources */,
 				C16173CC198F545C008F419A /* main.m in Sources */,
 				C16173F9198F5519008F419A /* MeituEditStyleViewController.m in Sources */,
+				C1A9D5B419AEC8BD0030FEFF /* GLMeituSpliceContentView.m in Sources */,
 				C16173FC198F559C008F419A /* GLStoryboardSelectView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1042,6 +1054,7 @@
 				C16173EA198F545C008F419A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		C16173EB198F545C008F419A /* Build configuration list for PBXNativeTarget "MeiTuDemoTests" */ = {
 			isa = XCConfigurationList;
@@ -1050,6 +1063,7 @@
 				C16173ED198F545C008F419A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
