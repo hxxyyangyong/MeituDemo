@@ -14,12 +14,14 @@ MeituDemo
 5.可以自由加边框和覆盖层，覆盖层不影响底层的操作！
 
 
-==== 更新
+========== 
+更新
 1.可以自由拖动换图
 2.优化内存管理
 
 
-==== 效果预览
+==========
+ 效果预览
  ![image](https://github.com/hxxyyangyong/MeituDemo/blob/master/动画.gif)
  ![image](https://github.com/hxxyyangyong/MeituDemo/blob/master/截屏.png)
  ![image](https://github.com/hxxyyangyong/MeituDemo/blob/master/drag.gif)
